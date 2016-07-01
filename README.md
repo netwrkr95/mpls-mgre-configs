@@ -14,5 +14,8 @@ The content here will provide working configuration examples in a rather basic t
 
 Basic Topology:
 
-mGRE-Domain.jpg
+![alt text](https://github.com/netwrkr95/mpls-mgre-configs/blob/master/mGRE-Domain.png "Test Topology for configuration files")
+
+
+
 
