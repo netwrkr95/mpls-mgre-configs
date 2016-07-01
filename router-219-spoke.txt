@@ -1,0 +1,234 @@
+219#sh run
+Building configuration...
+
+Current configuration : 3710 bytes
+!
+version 15.2
+service timestamps debug datetime msec
+service timestamps log datetime msec
+!
+hostname 219
+!
+boot-start-marker
+boot-end-marker
+!
+!
+vrf definition red
+ rd 1:1
+ route-target export 1:1
+ route-target import 1:1
+ !
+ address-family ipv4
+  mdt default 239.1.1.1
+ exit-address-family
+!
+enable password kk
+!
+!
+!
+!
+no aaa new-model
+clock timezone EST 0 0
+ip cef
+!
+!
+!
+!
+!
+!
+ip multicast-routing
+ip multicast-routing vrf red
+!
+!
+!
+no ipv6 cef
+ipv6 multicast rpf use-bgp
+multilink bundle-name authenticated
+!
+!
+!
+!
+!
+!
+!
+!
+bfd map ipv4  172.16.10.2/24  172.16.100.19/32 test
+bfd-template multi-hop test
+ interval min-tx 900 min-rx 900 multiplier 3
+ authentication sha-1 keychain mGRE
+!
+!
+!
+!
+!
+!
+!
+!
+!
+!
+!
+!
+!
+!
+!
+!
+interface Loopback0
+ ip address 172.16.100.19 255.255.255.255
+ ip pim sparse-mode
+!
+interface Loopback100
+ vrf forwarding red
+ ip address 10.219.219.219 255.255.255.255
+ ip pim sparse-mode
+ ip igmp join-group 224.18.18.18
+!
+interface Ethernet0/0
+ ip address 172.16.19.2 255.255.255.0
+ ip pim sparse-mode
+!
+interface Ethernet0/1
+ no ip address
+ shutdown
+!
+interface Ethernet0/2
+ no ip address
+ shutdown
+!
+interface Ethernet0/3
+ no ip address
+ shutdown
+!
+interface Ethernet1/0
+ ip address 172.16.90.2 255.255.255.0
+ ip pim sparse-mode
+!
+interface Ethernet1/1
+ no ip address
+ shutdown
+!
+interface Ethernet1/2
+ no ip address
+ shutdown
+!
+interface Ethernet1/3
+ no ip address
+ shutdown
+!
+interface Ethernet2/0
+ vrf forwarding red
+ ip address 10.1.90.2 255.255.255.0
+ shutdown
+!
+interface Ethernet2/1
+ no ip address
+ shutdown
+!
+interface Ethernet2/2
+ no ip address
+ shutdown
+!
+interface Ethernet2/3
+ no ip address
+ shutdown
+!
+interface Ethernet3/0
+ ip address 172.16.59.1 255.255.255.0
+!
+interface Ethernet3/0.1
+ encapsulation dot1Q 180 second-dot1q 188
+ ip address 10.19.1.1 255.255.255.252
+!
+interface Ethernet3/1
+ no ip address
+ shutdown
+!
+interface Ethernet3/2
+ no ip address
+ shutdown
+!
+interface Ethernet3/3
+ no ip address
+ shutdown
+!
+l3vpn encapsulation ip vnet
+ transport ipv4 source Loopback0
+ protocol gre key 100
+ !
+router ospf 90 vrf red
+ redistribute bgp 65000 subnets
+ network 10.1.90.0 0.0.0.255 area 0
+!
+router ospf 1
+ network 172.16.59.0 0.0.0.255 area 0
+ network 172.16.90.0 0.0.0.255 area 0
+ network 172.16.100.19 0.0.0.0 area 0
+!
+router bgp 65000
+ bgp log-neighbor-changes
+ no bgp default ipv4-unicast
+ neighbor 172.16.19.1 remote-as 1
+ neighbor 172.16.19.1 update-source Ethernet0/0
+ neighbor 172.16.19.1 timers 1 3
+ neighbor 172.16.19.1 fall-over
+ neighbor 172.16.19.1 fall-over bfd
+ neighbor 172.16.100.58 remote-as 65000
+ neighbor 172.16.100.58 update-source Loopback0
+ neighbor 172.16.100.59 remote-as 65000
+ neighbor 172.16.100.59 update-source Loopback0
+ !
+ address-family ipv4
+  network 172.16.100.19 mask 255.255.255.255
+  neighbor 172.16.19.1 activate
+  neighbor 172.16.19.1 allowas-in
+ exit-address-family
+ !
+ address-family vpnv4
+  neighbor 172.16.100.58 activate
+  neighbor 172.16.100.58 send-community extended
+  neighbor 172.16.100.58 route-map mgre-v4 in
+ exit-address-family
+ !
+ address-family ipv4 mdt
+  neighbor 172.16.100.58 activate
+  neighbor 172.16.100.58 send-community extended
+  neighbor 172.16.100.59 activate
+  neighbor 172.16.100.59 send-community extended
+ exit-address-family
+ !
+ address-family ipv4 vrf red
+  network 10.0.0.0
+  network 10.219.219.219 mask 255.255.255.255
+ exit-address-family
+!
+ip forward-protocol nd
+!
+no ip http server
+!
+ip pim rp-address 172.16.100.18
+ip pim vrf red rp-address 10.218.218.218
+!
+!
+route-map mgre-v4 permit 10
+ set ip next-hop encapsulate l3vpn vnet
+!
+!
+!
+control-plane
+!
+!
+line con 0
+ password kk
+ logging synchronous
+line aux 0
+ password kk
+line vty 0 2
+ password kk
+ login
+line vty 3 4
+ login
+!
+!
+!
+end
+
+219#

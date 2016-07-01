@@ -1,0 +1,171 @@
+258#sh run
+Building configuration...
+
+Current configuration : 2144 bytes
+!
+version 15.2
+service timestamps debug datetime msec
+service timestamps log datetime msec
+!
+hostname 258
+!
+boot-start-marker
+boot-end-marker
+!
+!
+enable password kk
+!
+!
+!
+!
+no aaa new-model
+clock timezone EST 0 0
+ip cef
+!
+!
+!
+no ip domain lookup
+!
+!
+!
+!
+!
+!
+no ipv6 cef
+ipv6 multicast rpf use-bgp
+multilink bundle-name authenticated
+!
+!
+!
+!
+!
+!
+!
+!
+!
+!
+!
+!
+!
+!
+!
+!
+!
+!
+!
+!
+!
+!
+!
+interface Loopback0
+ ip address 172.16.100.58 255.255.255.255
+!
+interface Ethernet0/0
+ ip address 172.16.58.2 255.255.255.0
+!
+interface Ethernet0/1
+ no ip address
+ shutdown
+!
+interface Ethernet0/2
+ no ip address
+ shutdown
+!
+interface Ethernet0/3
+ no ip address
+ shutdown
+!
+interface Ethernet1/0
+ no ip address
+ shutdown
+!
+interface Ethernet1/1
+ no ip address
+ shutdown
+!
+interface Ethernet1/2
+ no ip address
+ shutdown
+!
+interface Ethernet1/3
+ no ip address
+ shutdown
+!
+interface Ethernet2/0
+ no ip address
+ shutdown
+!
+interface Ethernet2/1
+ no ip address
+ shutdown
+!
+interface Ethernet2/2
+ no ip address
+ shutdown
+!
+interface Ethernet2/3
+ no ip address
+ shutdown
+!
+interface Ethernet3/0
+ no ip address
+ shutdown
+!
+interface Ethernet3/1
+ no ip address
+ shutdown
+!
+interface Ethernet3/2
+ no ip address
+ shutdown
+!
+interface Ethernet3/3
+ no ip address
+ shutdown
+!
+router ospf 1
+ network 172.16.0.0 0.0.255.255 area 0
+!
+router bgp 65000
+ bgp log-neighbor-changes
+ neighbor 172.16.10.2 remote-as 65000
+ neighbor 172.16.10.2 update-source Loopback0
+ neighbor 172.16.100.18 remote-as 65000
+ neighbor 172.16.100.18 update-source Loopback0
+ neighbor 172.16.100.19 remote-as 65000
+ neighbor 172.16.100.19 update-source Loopback0
+ !
+ address-family vpnv4
+  neighbor 172.16.10.2 activate
+  neighbor 172.16.10.2 send-community extended
+  neighbor 172.16.10.2 route-reflector-client
+  neighbor 172.16.100.18 activate
+  neighbor 172.16.100.18 send-community extended
+  neighbor 172.16.100.18 route-reflector-client
+  neighbor 172.16.100.19 activate
+  neighbor 172.16.100.19 send-community extended
+ exit-address-family
+!
+ip forward-protocol nd
+!
+no ip http server
+!
+!
+!
+!
+!
+control-plane
+!
+!
+line con 0
+ logging synchronous
+line aux 0
+line vty 0 4
+ password kk
+ login
+!
+!
+!
+end
+
+258#

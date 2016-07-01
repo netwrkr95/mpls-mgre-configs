@@ -1,0 +1,307 @@
+218#sh run
+Building configuration...
+
+Current configuration : 5075 bytes
+!
+version 15.2
+service timestamps debug datetime msec
+service timestamps log datetime msec
+!
+hostname 218
+!
+boot-start-marker
+boot-end-marker
+!
+!
+vrf definition red
+ rd 1:1
+ route-target export 1:1
+ route-target import 1:1
+ route-target import 99:99
+ !
+ address-family ipv4
+  mdt default 239.1.1.1
+ exit-address-family
+!
+vrf definition shared
+ rd 99:99
+ route-target export 99:99
+ route-target import 99:99
+ route-target import 1:1
+ !
+ address-family ipv4
+ exit-address-family
+!
+enable password kk
+!
+!
+!
+!
+no aaa new-model
+clock timezone EST 0 0
+ip cef
+!
+!
+!
+no ip domain lookup
+!
+!
+!
+ip multicast-routing
+ip multicast-routing vrf red
+!
+!
+!
+no ipv6 cef
+ipv6 multicast rpf use-bgp
+!
+flow record layer-2
+!
+multilink bundle-name authenticated
+!
+!
+!
+!
+!
+!
+!
+!
+!
+!
+!
+!
+!
+!
+class-map match-any egress
+ match mpls experimental topmost 5
+ match ip precedence 5
+class-map match-all ingress
+ match any
+!
+policy-map ingress
+ class ingress
+  police cir 900000
+   conform-action set-mpls-exp-topmost-transmit 5
+   conform-action set-prec-transmit 5
+   exceed-action set-mpls-exp-topmost-transmit 2
+   violate-action set-mpls-exp-topmost-transmit 0
+policy-map child
+ class egress
+  priority percent 20
+ class class-default
+  random-detect
+policy-map parent
+ class class-default
+  shape average percent 40
+  random-detect
+   service-policy child
+!
+!
+!
+!
+!
+!
+!
+!
+!
+!
+!
+interface Loopback0
+ ip address 172.16.100.18 255.255.255.255
+ ip pim sparse-mode
+!
+interface Loopback99
+ vrf forwarding shared
+ no ip address
+!
+interface Loopback218
+ vrf forwarding red
+ ip address 10.218.218.218 255.255.255.255
+ ip pim sparse-mode
+!
+interface Ethernet0/0
+ ip address 172.16.18.2 255.255.255.0
+ ip pim sparse-mode
+ load-interval 30
+ service-policy output parent
+!
+interface Ethernet0/1
+ no ip address
+ shutdown
+!
+interface Ethernet0/2
+ no ip address
+ shutdown
+!
+interface Ethernet0/3
+ no ip address
+ shutdown
+!
+interface Ethernet1/0
+ ip address 172.16.58.1 255.255.255.0
+!
+interface Ethernet1/1
+ no ip address
+ shutdown
+!
+interface Ethernet1/2
+ no ip address
+ shutdown
+!
+interface Ethernet1/3
+ no ip address
+ shutdown
+!
+interface Ethernet2/0
+ vrf forwarding red
+ ip address 10.1.90.1 255.255.255.0
+ load-interval 30
+ shutdown
+ service-policy input ingress
+!
+interface Ethernet2/1
+ no ip address
+ shutdown
+!
+interface Ethernet2/2
+ no ip address
+ shutdown
+!
+interface Ethernet2/3
+ no ip address
+ shutdown
+!
+interface Ethernet3/0
+ ip address 172.16.90.1 255.255.255.0
+ ip pim sparse-mode
+ shutdown
+!
+interface Ethernet3/1
+ no ip address
+ shutdown
+!
+interface Ethernet3/2
+ no ip address
+ shutdown
+!
+interface Ethernet3/3
+ no ip address
+ shutdown
+!
+interface Ethernet4/0
+ ip address 172.16.50.1 255.255.255.0
+ mpls bgp forwarding
+!
+interface Ethernet4/1
+ no ip address
+ shutdown
+!
+interface Ethernet4/2
+ no ip address
+ shutdown
+!
+interface Ethernet4/3
+ no ip address
+ shutdown
+!
+interface vasileft100
+ ip address 100.1.1.1 255.255.255.0
+ no keepalive
+!
+interface vasiright100
+ vrf forwarding red
+ ip address 100.1.1.2 255.255.255.0
+ no keepalive
+!
+l3vpn encapsulation ip vnet
+ transport ipv4 source Loopback0
+ protocol gre key 100
+ mpls mtu max
+ !
+router ospf 90 vrf red
+ redistribute bgp 65000 subnets
+ network 10.1.90.0 0.0.0.255 area 0
+!
+router ospf 1
+ redistribute bgp 65000 subnets
+ network 172.16.58.0 0.0.0.255 area 0
+ network 172.16.90.0 0.0.0.255 area 0
+!
+router bgp 65000
+ bgp log-neighbor-changes
+ no bgp default route-target filter
+ neighbor 172.16.18.1 remote-as 1
+ neighbor 172.16.18.1 update-source Ethernet0/0
+ neighbor 172.16.50.2 remote-as 65111
+ neighbor 172.16.50.2 update-source Ethernet4/0
+ neighbor 172.16.100.58 remote-as 65000
+ neighbor 172.16.100.58 update-source Loopback0
+ !
+ address-family ipv4
+  network 172.16.100.18 mask 255.255.255.255
+  redistribute ospf 1 metric 10
+  neighbor 172.16.18.1 activate
+  neighbor 172.16.18.1 allowas-in 5
+  no neighbor 172.16.50.2 activate
+  no neighbor 172.16.100.58 activate
+ exit-address-family
+ !
+ address-family vpnv4
+  neighbor 172.16.50.2 activate
+  neighbor 172.16.50.2 send-community both
+  neighbor 172.16.100.58 activate
+  neighbor 172.16.100.58 send-community extended
+  neighbor 172.16.100.58 next-hop-self
+  neighbor 172.16.100.58 route-map mgre-v4 in
+ exit-address-family
+ !
+ address-family ipv4 mdt
+  neighbor 172.16.50.2 activate
+  neighbor 172.16.50.2 send-community extended
+  neighbor 172.16.100.58 activate
+  neighbor 172.16.100.58 send-community extended
+ exit-address-family
+ !
+ address-family ipv4 vrf red
+  network 10.1.90.0 mask 255.255.255.0
+  network 10.218.218.218 mask 255.255.255.255
+  redistribute ospf 90
+ exit-address-family
+!
+ip forward-protocol nd
+!
+no ip http server
+ip route 100.1.1.2 255.255.255.255 vasileft100
+!
+ip pim rp-address 172.16.100.18
+ip pim vrf red rp-address 10.218.218.218
+!
+!
+route-map mgre-v4 permit 10
+ set ip next-hop encapsulate l3vpn vnet
+!
+!
+!
+control-plane
+!
+!
+line con 0
+ exec-timeout 9999 1
+ password kk
+ logging synchronous
+line aux 0
+ exec-timeout 9999 1
+ password kk
+line vty 0 2
+ exec-timeout 9999 1
+ password kk
+ login
+line vty 3 4
+ exec-timeout 9999 1
+ login
+!
+!
+!
+end
+
+218#
