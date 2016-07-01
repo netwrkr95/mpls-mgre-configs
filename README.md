@@ -11,3 +11,8 @@ It is obvious the MPLS VPN over mGRE solution offers clear advantages for networ
 More details can be found at Cisco's link: http://www.cisco.com/c/en/us/td/docs/ios-xml/ios/interface/configuration/xe-3s/ir-xe-3s-book/ir-mpls-vpnomgre-xe.html
 
 The content here will provide working configuration examples in a rather basic topology.
+
+Basic Topology:
+
+mGRE-Domain.jpg
+
